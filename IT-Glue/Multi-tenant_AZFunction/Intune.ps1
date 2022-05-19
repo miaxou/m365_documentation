@@ -196,7 +196,7 @@ $AllITGlueDomains = do {
     $i++
     $domains
     Write-Host "Retrieved $($domains.count) Domains" -ForegroundColor Yellow
-}while ($Contacts.count % 1000 -eq 0 -and $Contacts.count -ne 0)
+}while ($domains.count % 1000 -eq 0 -and $domains.count -ne 0)
 
 $DomainList = foreach ($domain in $AllITGlueDomains) {
     $ITGDomain = $domain.'name'
@@ -514,7 +514,7 @@ param (
 if ($id -eq 'All') {
     return 'All'
 }
-$DisplayName = $Groups | ? { $_.id -eq $ID } | Select -ExpandProperty DisplayName
+$DisplayName = $Groups | Where-Object { $_.id -eq $ID } | Select-Object -ExpandProperty DisplayName
 if ([string]::IsNullOrEmpty($displayName)) {
     return "No Data"
 }
@@ -536,7 +536,7 @@ if($Assignments){
 
   $IncludedGroups = ($Assignments | Where-Object {$_.target.'@odata.type' -contains "#microsoft.graph.groupAssignmentTarget"}).target
   if($IncludedGroups){
-    $IncludedGroups = ($IncludedGroups | % { Get-GroupNameFromId -Groups $GroupListOutput -id $_.groupId })
+    $IncludedGroups = ($IncludedGroups | ForEach-Object { Get-GroupNameFromId -Groups $GroupListOutput -id $_.groupId })
   } else{
     $IncludedGroups = ""
   }
@@ -557,7 +557,7 @@ if($Assignments){
 
   $ExcludedGroups = ($Assignments | Where-Object {$_.target.'@odata.type' -contains "#microsoft.graph.exclusionGroupAssignmentTarget"}).target
   if($ExcludedGroups){
-    $ExcludedGroups = ($ExcludedGroups | % { Get-GroupNameFromId -Groups $GroupListOutput -id $_.groupId })
+    $ExcludedGroups = ($ExcludedGroups | ForEach-ObjectorEach-Object { Get-GroupNameFromId -Groups $GroupListOutput -id $_.groupId })
   } else{
     $ExcludedGroups = ""
   }
@@ -824,7 +824,7 @@ function Get-Assignments{
     if($AssignmentType.'@odata.type' -eq "#microsoft.graph.allDevicesAssignmentTarget"){
       $output = "All Devices"
     }elseif ($AssignmentType.'@odata.type' -eq "#microsoft.graph.groupAssignmentTarget") {
-      $output = ($AssignmentType |  % { Get-GroupNameFromId -Groups $GroupListOutput -id $_.groupId })
+      $output = ($AssignmentType |  ForEach-Object { Get-GroupNameFromId -Groups $GroupListOutput -id $_.groupId })
     } else {
       $output = "N/A"
     }
@@ -897,7 +897,7 @@ try{
     }
     
     $MobileAppConfigObj = foreach ($policy in $MobileAppConfig) {
-      $targetedApps = ($policy | % {Get-TargetedMobileApps -id $_.targetedMobileApps} )
+      $targetedApps = ($policy | ForEach-Object {Get-TargetedMobileApps -id $_.targetedMobileApps} )
       $Assignments = (Invoke-RestMethod -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileAppConfigurations/$($policy.id)/assignments" -Headers $Headers -Method Get -ContentType "application/json").value 
       $includedGroup = Get-IncludedGroups -id $policy.id -path "deviceAppManagement/mobileAppConfigurations"
       $ExcludedGroup = Get-ExcludedGroups -id $policy.id -path "deviceAppManagement/mobileAppConfigurations"

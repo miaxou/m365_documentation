@@ -220,7 +220,7 @@ $AllITGlueDomains = do {
     $i++
     $domains
     Write-Host "Retrieved $($domains.count) Domains" -ForegroundColor Yellow
-}while ($Contacts.count % 1000 -eq 0 -and $Contacts.count -ne 0)
+}while ($domains.count % 1000 -eq 0 -and $domains.count -ne 0)
 
 $DomainList = foreach ($domain in $AllITGlueDomains) {
     $ITGDomain = $domain.'name'
